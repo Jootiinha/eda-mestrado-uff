@@ -10,7 +10,7 @@ int main() {
     std::cout << "Expressao original: (((2)-(1))*(4))" << std::endl;
 
     // Executa a filtragem
-    removerParentesesExcedentes(expressao, tamanho);
+    removerParenteses(expressao, tamanho);
 
     return 0;
 }

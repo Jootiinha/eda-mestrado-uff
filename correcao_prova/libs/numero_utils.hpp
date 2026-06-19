@@ -17,7 +17,7 @@ bool ehNumero(Item* item) {
     return ehNumero(ic->data);
 }
 
-void removerParentesesExcedentes(char e[], int n) {
+void removerParenteses(char e[], int n) {
     Pilha p;
 
     // Varredura da expressão caractere por caractere (Lógica do Slide 20)
