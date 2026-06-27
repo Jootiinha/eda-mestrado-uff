@@ -35,21 +35,22 @@
 \maketitle
 
 \begin{abstract}
-Este trabalho apresenta uma implementação em C++ de um TAD de grafo para apoiar a escolha de um bairro para instalação de um galpão logístico. A solução lê os dados de vértices e arestas a partir de arquivos texto, calcula distâncias mínimas com os algoritmos de Dijkstra e Bellman-Ford, estima o custo operacional mensal e anual de cada candidato e escolhe o melhor bairro com base na expressão definida no enunciado do trabalho. Também foi incluída uma rotina de benchmark que grava em CSV as médias de tempo dos dois algoritmos após várias repetições.
+Este trabalho apresenta uma implementação em C++ de um TAD de grafo para apoiar a escolha de um bairro para instalação de um galpão logístico. A solução lê os dados de vértices e arestas a partir de arquivos texto, calcula distâncias mínimas com os algoritmos de Dijkstra e Bellman-Ford, estima o custo operacional mensal e anual de cada candidato e escolhe o melhor bairro com base na expressão custoGalpão = custoInstalação – custoOperaçãoAnual. Também foi incluída uma rotina de benchmark que grava em CSV as médias de tempo dos dois algoritmos após várias repetições.
 \end{abstract}
 
 \section{Introdução}
 
-O problema proposto consiste em selecionar o melhor bairro para instalar um galpão logístico. Cada bairro possui um custo fixo de instalação, uma demanda estimada de mercadorias para cada mês do ano e conexões com bairros vizinhos por meio de arestas com custo de transporte.
+A problemática do trabalho consiste em encontrar o melhor bairro para a instalação de um galpão logístico. Para isso, cada bairro possui um custo fixo de instalação, uma demanda estimada para cada mês do ano e conexões com outros bairros vizinhos, representadas por arestas com custo de transporte.
 
-Como o custo de entrega é proporcional à distância entre o bairro de origem e o bairro de destino, a solução depende do cálculo eficiente das menores distâncias entre o depósito e os demais bairros da cidade. Para isso, foram usados dois algoritmos clássicos de caminhos mínimos:
+Como o custo de entrega é proporcional à distância entre o bairro onde o galpão será instalado e os demais bairros atendidos, a solução depende do cálculo das menores distâncias dentro da cidade. Dessa forma, foram utilizados dois algoritmos clássicos de caminhos mínimos:
 
 \begin{itemize}[noitemsep]
-    \item Dijkstra;
-    \item Bellman-Ford.
+\item Dijkstra;
+\item Bellman-Ford.
 \end{itemize}
 
-Os dois algoritmos devem encontrar as mesmas distâncias, mas possuem custos computacionais diferentes.
+Embora os dois algoritmos tenham como objetivo encontrar as mesmas menores distâncias, eles apresentam custos computacionais diferentes. Por esse motivo, além de resolver o problema proposto, também é possível comparar o desempenho de cada abordagem.
+
 
 \section{Estrutura da Solução}
 
@@ -70,9 +71,10 @@ Os arquivos principais da implementação são:
 
 \subsection{Modelagem adotada}
 
-O grafo foi modelado como não direcionado, pois o enunciado descreve as conexões em termos de vizinhança entre bairros, com distância conhecida entre eles, sem explicitar direção.
+O grafo foi modelado como não direcionado, assumindo que o custo de deslocamento entre dois bairros é o mesmo nos dois sentidos. Com isso, cada conexão é armazenada de forma simétrica na estrutura de adjacência, o que simplifica a representação.
 
-Do ponto de vista de orientação a objetos, a modelagem buscou três propriedades principais. A primeira é o encapsulamento, já que os dados internos do grafo ficam protegidos dentro da classe \texttt{Grafo} e são manipulados apenas por seus métodos públicos. A segunda é a coesão, porque a classe concentra responsabilidades diretamente ligadas ao domínio do problema: armazenamento da estrutura, cálculo de caminhos mínimos, avaliação dos bairros e comparação de desempenho. A terceira é a delegação de responsabilidades, pois a regra de negócio da escolha do galpão e a produção dos resultados do benchmark foram colocadas no próprio TAD, enquanto o programa principal ficou restrito à leitura dos argumentos e à apresentação das saídas.
+Na modelagem orientada a objetos, a classe \texttt{Grafo} concentra a estrutura de dados e as operações principais da solução. Ela armazena os bairros e as arestas, executa os algoritmos de caminhos mínimos, calcula os custos operacionais e reúne os resultados da análise. Já o programa principal fica responsável apenas por carregar os arquivos, acionar a execução e exibir as saídas. Essa separação procura manter responsabilidades mais bem definidas entre os módulos, em linha com princípios de coesão e responsabilidade única discutidos por Martin \cite{martin2009,martin2018}.
+
 
 Cada vértice armazena:
 
@@ -98,7 +100,7 @@ A implementação foi desenvolvida em C++, seguindo a abordagem da linguagem e d
 
 Além do encapsulamento dos dados internos do grafo, a modelagem orientada a objetos foi reforçada ao concentrar na própria classe \texttt{Grafo} as responsabilidades de avaliar cada bairro candidato, escolher o melhor local para instalação e produzir os resultados do benchmark. Com isso, o arquivo \texttt{main.cpp} ficou restrito à apresentação dos resultados e ao tratamento dos argumentos de linha de comando.
 
-Essa organização foi adotada também como justificativa para o uso coerente de orientação a objetos no trabalho. Em vez de manter a lógica de decisão espalhada em funções externas, o comportamento central do problema passou a ser expresso por métodos do próprio objeto que representa o grafo da cidade. Assim, a estrutura de dados não apenas armazena informações, mas também conhece as operações necessárias para analisá-las dentro do contexto do domínio.
+Essa organização evita espalhar a lógica principal da solução por funções externas e deixa a orquestração de entrada e saída separada do processamento central. A escolha segue a ideia de manter cada parte do programa com um papel mais claro e com menor acoplamento estrutural, como defendido em \textit{Clean Code} e \textit{Clean Architecture} \cite{martin2009,martin2018}.
 
 \subsection{Leitura dos arquivos}
 
@@ -409,6 +411,16 @@ Bjarne Stroustrup.
 \textit{The C++ Programming Language}.
 4th ed.
 Addison-Wesley, 2013.
+
+\bibitem{martin2009}
+Robert C. Martin.
+\textit{Clean Code: A Handbook of Agile Software Craftsmanship}.
+Prentice Hall, 2009.
+
+\bibitem{martin2018}
+Robert C. Martin.
+\textit{Clean Architecture: A Craftsman's Guide to Software Structure and Design}.
+Prentice Hall, 2018.
 
 \end{thebibliography}
 
