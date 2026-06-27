@@ -629,11 +629,11 @@ pequenas para destacar a vantagem estrutural do Dijkstra, enquanto
 Bellman-Ford se beneficia aqui de uma implementação simples, com percursos
 lineares sobre um vetor de arestas e pouca sobrecarga de estruturas
 auxiliares. Já o Dijkstra, apesar da melhor ordem assintótica, paga o custo
-constante da fila de prioridade mesmo em grafos modestos. A comparação entre
-tempo real e tempo de CPU sugere ainda que parte da diferença observada na
-execução completa é ampliada por custos externos à lógica algorítmica estrita,
-como chamadas de relógio, agendamento do processo e outros efeitos do ambiente
-de execução.
+constante da fila de prioridade mesmo em grafos modestos. A comparação entre tempo real e tempo de CPU sugere ainda que parte da
+diferença observada na execução completa pode estar relacionada a fatores do
+ambiente de execução, como escalonamento do processo pelo sistema operacional,
+resolução dos mecanismos de medição de tempo e outras variações da máquina
+durante o benchmark.
 
 Assim, a comparação entre os algoritmos pode ser resumida em quatro pontos.
 Primeiro, ambos produziram os mesmos caminhos mínimos em todas as execuções,
@@ -675,8 +675,7 @@ O trabalho implementa um TAD de grafo em C++ capaz de modelar os bairros da
 cidade, calcular caminhos mínimos com Dijkstra e Bellman-Ford e estimar o
 custo operacional anual de um galpão logístico. A solução também compara os
 algoritmos por meio de benchmarks repetidos em duas instâncias, com saída em
-CSV, considerando tanto o tempo real quanto o tempo de CPU, o que fortalece a
-análise experimental do relatório.
+CSV, considerando tanto o tempo real quanto o tempo de CPU.
 
 Sob a perspectiva experimental, os resultados mostraram que Bellman-Ford foi
 mais rápido nas instâncias avaliadas mesmo quando a medição passou a considerar
