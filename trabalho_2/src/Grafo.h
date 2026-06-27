@@ -42,8 +42,10 @@ struct ResultadoEscolhaGalpao {
 struct ResultadoBenchmarkBairro {
     int idBairro;
     int repeticoes;
-    double mediaDijkstraMicros;
-    double mediaBellmanFordMicros;
+    double mediaDijkstraTempoRealMicros;
+    double mediaBellmanFordTempoRealMicros;
+    double mediaDijkstraCpuMicros;
+    double mediaBellmanFordCpuMicros;
 };
 
 class Grafo {

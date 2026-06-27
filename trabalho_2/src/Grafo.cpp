@@ -1,6 +1,7 @@
 #include "Grafo.h"
 
 #include <chrono>
+#include <ctime>
 #include <fstream>
 #include <queue>
 #include <stdexcept>
@@ -235,18 +236,24 @@ std::vector<ResultadoBenchmarkBairro> Grafo::executarBenchmark(int repeticoes) c
     resultados.reserve(quantidadeVertices());
 
     for (int deposito = 0; deposito < quantidadeVertices(); ++deposito) {
-        double somaDijkstraMicros = 0.0;
-        double somaBellmanMicros = 0.0;
+        double somaDijkstraTempoRealMicros = 0.0;
+        double somaBellmanTempoRealMicros = 0.0;
+        double somaDijkstraCpuMicros = 0.0;
+        double somaBellmanCpuMicros = 0.0;
         std::vector<double> distanciasReferencia;
 
         for (int repeticao = 0; repeticao < repeticoes; ++repeticao) {
+            const std::clock_t inicioCpuDijkstra = std::clock();
             const auto inicioDijkstra = std::chrono::high_resolution_clock::now();
             const auto resultadoDijkstra = dijkstra(deposito);
             const auto fimDijkstra = std::chrono::high_resolution_clock::now();
+            const std::clock_t fimCpuDijkstra = std::clock();
 
+            const std::clock_t inicioCpuBellman = std::clock();
             const auto inicioBellman = std::chrono::high_resolution_clock::now();
             const auto resultadoBellman = bellmanFord(deposito);
             const auto fimBellman = std::chrono::high_resolution_clock::now();
+            const std::clock_t fimCpuBellman = std::clock();
 
             if (!distanciasSaoIguais(resultadoDijkstra.distancias, resultadoBellman.distancias)) {
                 throw std::runtime_error("Dijkstra e Bellman-Ford retornaram distancias diferentes no benchmark.");
@@ -258,15 +265,21 @@ std::vector<ResultadoBenchmarkBairro> Grafo::executarBenchmark(int repeticoes) c
                 throw std::runtime_error("Dijkstra retornou distancias inconsistentes entre repeticoes.");
             }
 
-            somaDijkstraMicros += std::chrono::duration<double, std::micro>(fimDijkstra - inicioDijkstra).count();
-            somaBellmanMicros += std::chrono::duration<double, std::micro>(fimBellman - inicioBellman).count();
+            somaDijkstraTempoRealMicros += std::chrono::duration<double, std::micro>(fimDijkstra - inicioDijkstra).count();
+            somaBellmanTempoRealMicros += std::chrono::duration<double, std::micro>(fimBellman - inicioBellman).count();
+            somaDijkstraCpuMicros +=
+                static_cast<double>(fimCpuDijkstra - inicioCpuDijkstra) * 1000000.0 / static_cast<double>(CLOCKS_PER_SEC);
+            somaBellmanCpuMicros +=
+                static_cast<double>(fimCpuBellman - inicioCpuBellman) * 1000000.0 / static_cast<double>(CLOCKS_PER_SEC);
         }
 
         resultados.push_back({
             bairros_[deposito].id,
             repeticoes,
-            somaDijkstraMicros / static_cast<double>(repeticoes),
-            somaBellmanMicros / static_cast<double>(repeticoes),
+            somaDijkstraTempoRealMicros / static_cast<double>(repeticoes),
+            somaBellmanTempoRealMicros / static_cast<double>(repeticoes),
+            somaDijkstraCpuMicros / static_cast<double>(repeticoes),
+            somaBellmanCpuMicros / static_cast<double>(repeticoes),
         });
     }
 

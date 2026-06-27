@@ -7,10 +7,14 @@
 \usepackage{geometry}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{listings}
+\usepackage{pgfplots}
 \usepackage{xcolor}
+
+\pgfplotsset{compat=1.18}
 
 \geometry{margin=2.5cm}
 \hypersetup{
@@ -26,8 +30,17 @@
     columns=fullflexible
 }
 
-\title{Implementação de um TAD Grafo para Escolha de Galpão Logístico}
-\author{João CRM}
+\title{TAD Grafo para Escolha de Galpão Logístico -- Implementação}
+\author{
+    João Carlos Romero Monteiro -- \texttt{joaocrm@id.uff.br}\\
+    Universidade Federal Fluminense\\
+    \parbox{0.85\textwidth}{
+        \centering
+        Mestrado Multi-Interdisciplinar em Modelagem Computacional em Ciência
+        e Tecnologia
+    }\\
+    Disciplina Estruturas de Dados e Algoritmos
+}
 \date{Junho de 2026}
 
 \begin{document}
@@ -35,35 +48,56 @@
 \maketitle
 
 \begin{abstract}
-Este trabalho apresenta uma implementação em C++ de um TAD de grafo para apoiar a escolha de um bairro para instalação de um galpão logístico. A solução lê os dados de vértices e arestas a partir de arquivos texto, calcula distâncias mínimas com os algoritmos de Dijkstra e Bellman-Ford, estima o custo operacional mensal e anual de cada candidato e escolhe o melhor bairro com base na expressão custoGalpão = custoInstalação – custoOperaçãoAnual. Também foi incluída uma rotina de benchmark que grava em CSV as médias de tempo dos dois algoritmos após várias repetições.
+Este trabalho apresenta uma implementação em C++ de um TAD de grafo para apoiar
+a escolha de um bairro para instalação de um galpão logístico. A solução lê os
+dados de vértices e arestas a partir de arquivos texto, calcula distâncias
+mínimas com os algoritmos de Dijkstra e Bellman-Ford, estima o custo
+operacional mensal e anual de cada candidato e escolhe o melhor bairro com base
+na expressão custoGalpão = custoInstalação – custoOperaçãoAnual. Também foi
+incluída uma rotina de benchmark que grava em CSV as médias de tempo real e de
+tempo de CPU dos dois algoritmos após várias repetições.
 \end{abstract}
 
 \section{Introdução}
 
-A problemática do trabalho consiste em encontrar o melhor bairro para a instalação de um galpão logístico. Para isso, cada bairro possui um custo fixo de instalação, uma demanda estimada para cada mês do ano e conexões com outros bairros vizinhos, representadas por arestas com custo de transporte.
+A problemática do trabalho consiste em encontrar o melhor bairro para a
+instalação de um galpão logístico. Para isso, cada bairro possui um custo fixo
+de instalação, uma demanda estimada para cada mês do ano e conexões com outros
+bairros vizinhos, representadas por arestas com custo de transporte.
 
-Como o custo de entrega é proporcional à distância entre o bairro onde o galpão será instalado e os demais bairros atendidos, a solução depende do cálculo das menores distâncias dentro da cidade. Dessa forma, foram utilizados dois algoritmos clássicos de caminhos mínimos:
+Como o custo de entrega é proporcional à distância entre o bairro onde o galpão
+será instalado e os demais bairros atendidos, a solução depende do cálculo das
+menores distâncias dentro da cidade. Dessa forma, foram utilizados dois
+algoritmos clássicos de caminhos mínimos:
 
 \begin{itemize}[noitemsep]
-\item Dijkstra;
-\item Bellman-Ford.
+    \item Dijkstra;
+    \item Bellman-Ford.
 \end{itemize}
 
-Embora os dois algoritmos tenham como objetivo encontrar as mesmas menores distâncias, eles apresentam custos computacionais diferentes. Por esse motivo, além de resolver o problema proposto, também é possível comparar o desempenho de cada abordagem.
-
+Embora os dois algoritmos tenham como objetivo encontrar as mesmas menores
+distâncias, eles apresentam custos computacionais diferentes. Por esse motivo,
+além de resolver o problema proposto, também é possível comparar o desempenho
+de cada abordagem.
 
 \section{Estrutura da Solução}
 
 Os arquivos principais da implementação são:
 
 \begin{itemize}[noitemsep]
-    \item \texttt{src/Grafo.h}: declara as estruturas \texttt{Bairro}, \texttt{Aresta}, \texttt{ResultadoAlgoritmo}, \texttt{ResultadoAvaliacaoBairro}, \texttt{ResultadoEscolhaGalpao}, \texttt{ResultadoBenchmarkBairro} e a classe \texttt{Grafo};
+    \item \texttt{src/Grafo.h}: declara as estruturas \texttt{Bairro},
+          \texttt{Aresta}, \texttt{ResultadoAlgoritmo},
+          \texttt{ResultadoAvaliacaoBairro},
+          \texttt{ResultadoEscolhaGalpao},
+          \texttt{ResultadoBenchmarkBairro} e a classe \texttt{Grafo};
     \item \texttt{src/Grafo.cpp}: implementa o TAD e os algoritmos;
     \item \texttt{src/main.cpp}: contém o programa principal e o modo de benchmark;
     \item \texttt{dados/vertices.txt}: arquivo de teste com os bairros;
     \item \texttt{dados/arestas.txt}: arquivo de teste com as conexões;
-    \item \texttt{dados/vertices\_maior.txt}: segunda instância de teste com mais vértices;
-    \item \texttt{dados/arestas\_maior.txt}: segunda instância de teste para o benchmark ampliado;
+    \item \texttt{dados/vertices\_maior.txt}: segunda instância de teste com
+          mais vértices;
+    \item \texttt{dados/arestas\_maior.txt}: segunda instância de teste para o
+          benchmark ampliado;
     \item \texttt{resultados/time\_compare.csv}: saída do benchmark;
     \item \texttt{resultados/time\_compare\_large.csv}: saída do benchmark ampliado;
     \item \texttt{Makefile}: compilação e execução.
@@ -71,10 +105,19 @@ Os arquivos principais da implementação são:
 
 \subsection{Modelagem adotada}
 
-O grafo foi modelado como não direcionado, assumindo que o custo de deslocamento entre dois bairros é o mesmo nos dois sentidos. Com isso, cada conexão é armazenada de forma simétrica na estrutura de adjacência, o que simplifica a representação.
+O grafo foi modelado como não direcionado, assumindo que o custo de
+deslocamento entre dois bairros é o mesmo nos dois sentidos. Com isso, cada
+conexão é armazenada de forma simétrica na estrutura de adjacência, o que
+simplifica a representação.
 
-Na modelagem orientada a objetos, a classe \texttt{Grafo} concentra a estrutura de dados e as operações principais da solução. Ela armazena os bairros e as arestas, executa os algoritmos de caminhos mínimos, calcula os custos operacionais e reúne os resultados da análise. Já o programa principal fica responsável apenas por carregar os arquivos, acionar a execução e exibir as saídas. Essa separação procura manter responsabilidades mais bem definidas entre os módulos, em linha com princípios de coesão e responsabilidade única discutidos por Martin \cite{martin2009,martin2018}.
-
+Na modelagem orientada a objetos, a classe \texttt{Grafo} concentra a estrutura
+de dados e as operações principais da solução. Ela armazena os bairros e as
+arestas, executa os algoritmos de caminhos mínimos, calcula os custos
+operacionais e reúne os resultados da análise. Já o programa principal fica
+responsável apenas por carregar os arquivos, acionar a execução e exibir as
+saídas. Essa separação procura manter responsabilidades mais bem definidas
+entre os módulos, em linha com princípios de coesão e responsabilidade única
+discutidos por Martin \cite{martin2009,martin2018}.
 
 Cada vértice armazena:
 
@@ -92,23 +135,39 @@ Cada aresta armazena:
     \item custo unitário de transporte.
 \end{itemize}
 
-Para simplificar a implementação e manter boa eficiência no Dijkstra, foram usadas simultaneamente uma lista de arestas e uma lista de adjacência.
+Para simplificar a implementação e manter boa eficiência no Dijkstra, foram
+usadas simultaneamente uma lista de arestas e uma lista de adjacência.
 
 \section{Implementação do TAD}
 
-A implementação foi desenvolvida em C++, seguindo a abordagem da linguagem e de suas bibliotecas padrão apresentada por Stroustrup \cite{stroustrup2013}.
+A implementação foi desenvolvida em C++, seguindo a abordagem da linguagem e de
+suas bibliotecas padrão apresentada por Stroustrup \cite{stroustrup2013}.
 
-Além do encapsulamento dos dados internos do grafo, a modelagem orientada a objetos foi reforçada ao concentrar na própria classe \texttt{Grafo} as responsabilidades de avaliar cada bairro candidato, escolher o melhor local para instalação e produzir os resultados do benchmark. Com isso, o arquivo \texttt{main.cpp} ficou restrito à apresentação dos resultados e ao tratamento dos argumentos de linha de comando.
+Além do encapsulamento dos dados internos do grafo, a modelagem orientada a
+objetos foi reforçada ao concentrar na própria classe \texttt{Grafo} as
+responsabilidades de avaliar cada bairro candidato, escolher o melhor local
+para instalação e produzir os resultados do benchmark. Com isso, o arquivo
+\texttt{main.cpp} ficou restrito à apresentação dos resultados e ao tratamento
+dos argumentos de linha de comando.
 
-Essa organização evita espalhar a lógica principal da solução por funções externas e deixa a orquestração de entrada e saída separada do processamento central. A escolha segue a ideia de manter cada parte do programa com um papel mais claro e com menor acoplamento estrutural, como defendido em \textit{Clean Code} e \textit{Clean Architecture} \cite{martin2009,martin2018}.
+Essa organização evita espalhar a lógica principal da solução por funções
+externas e deixa a orquestração de entrada e saída separada do processamento
+central. A escolha segue a ideia de manter cada parte do programa com um papel
+mais claro e com menor acoplamento estrutural, como defendido em
+\textit{Clean Code} e \textit{Clean Architecture} \cite{martin2009,martin2018}.
 
 \subsection{Leitura dos arquivos}
 
-O método \texttt{carregarVertices} lê a quantidade de vértices e, em seguida, uma linha por bairro contendo identificador, custo de instalação e as 12 demandas mensais.
+O método \texttt{carregarVertices} lê a quantidade de vértices e, em seguida,
+uma linha por bairro contendo identificador, custo de instalação e as 12
+demandas mensais.
 
-O método \texttt{carregarArestas} lê a quantidade de arestas e, em seguida, uma linha por aresta contendo os dois identificadores de bairros conectados e o custo da aresta.
+O método \texttt{carregarArestas} lê a quantidade de arestas e, em seguida, uma
+linha por aresta contendo os dois identificadores de bairros conectados e o
+custo da aresta.
 
-Se algum arquivo estiver inválido, a implementação interrompe a execução com uma exceção e mensagem descritiva.
+Se algum arquivo estiver inválido, a implementação interrompe a execução com
+uma exceção e mensagem descritiva.
 
 \subsection{Cálculo das distâncias}
 
@@ -126,9 +185,12 @@ Cada método retorna:
     \item o tempo de execução medido em microssegundos.
 \end{itemize}
 
-Os vetores retornados pelos dois algoritmos são comparados. Caso os resultados sejam diferentes, a execução é encerrada, pois isso indicaria erro de implementação.
+Os vetores retornados pelos dois algoritmos são comparados. Caso os resultados
+sejam diferentes, a execução é encerrada, pois isso indicaria erro de
+implementação.
 
-Para tornar a modelagem mais alinha aos princípios da orientação a objetos, a análise de negócio também foi incorporada ao TAD por meio dos métodos:
+Para tornar a modelagem mais alinhada aos princípios da orientação a objetos, a
+análise de negócio também foi incorporada ao TAD por meio dos métodos:
 
 \begin{itemize}[noitemsep]
     \item \texttt{avaliarBairroCandidato(int indiceDeposito)};
@@ -136,7 +198,9 @@ Para tornar a modelagem mais alinha aos princípios da orientação a objetos, a
     \item \texttt{executarBenchmark(int repeticoes)}.
 \end{itemize}
 
-Esses métodos retornam objetos de resultado que agrupam as informações calculadas, evitando que a lógica de avaliação e decisão fique espalhada fora da classe principal do domínio.
+Esses métodos retornam objetos de resultado que agrupam as informações
+calculadas, evitando que a lógica de avaliação e decisão fique espalhada fora
+da classe principal do domínio.
 
 \subsection{Cálculo do custo operacional}
 
@@ -149,15 +213,18 @@ Para cada bairro candidato a depósito:
     \item soma-se o custo dos 12 meses para obter o custo operacional anual.
 \end{enumerate}
 
-
 Ao final, a decisão é representada pela expressão:
 
 \begin{lstlisting}
 custoGalpao = custoInstalacao - custoOperacaoAnual
 \end{lstlisting}
 
-Essa expressão pode ser interpretada não como um custo total no sentido estrito, mas como um saldo entre o investimento fixo inicial e o impacto anual da operação. Nessa leitura, valores negativos indicam que o custo operacional anual superou o custo fixo de instalação, o que ajuda a explicar os resultados obtidos. Assim, o critério adotado compara diretamente essas duas parcelas para definir o bairro escolhido.
-
+Essa expressão pode ser interpretada não como um custo total no sentido
+estrito, mas como um saldo entre o investimento fixo inicial e o impacto anual
+da operação. Nessa leitura, valores negativos indicam que o custo operacional
+anual superou o custo fixo de instalação, o que ajuda a explicar os resultados
+obtidos. Assim, o critério adotado compara diretamente essas duas parcelas para
+definir o bairro escolhido.
 
 \section{Análise de Complexidade}
 
@@ -177,7 +244,8 @@ Esta seção considera apenas os métodos do TAD.
     \item Espaço adicional: $O(E + V)$.
 \end{itemize}
 
-Esse custo ocorre porque a implementação simples faz a busca do índice de cada identificador por varredura linear no vetor de bairros.
+Esse custo ocorre porque a implementação simples faz a busca do índice de cada
+identificador por varredura linear no vetor de bairros.
 
 \subsection{\texttt{indicePorId}}
 
@@ -216,7 +284,9 @@ Esse custo ocorre porque a implementação simples faz a busca do índice de cad
 
 \section{Dados de Teste}
 
-Foram usadas duas instâncias de teste. A primeira possui 5 bairros, a segunda foi adicionada apenas para fortalecer a comparação experimental entre os algoritmos.
+Foram usadas duas instâncias de teste. A primeira possui 5 bairros, a segunda
+foi adicionada apenas para fortalecer a comparação experimental entre os
+algoritmos.
 
 \subsection{Arquivo de vértices}
 
@@ -246,7 +316,10 @@ O grafo de teste é conexo.
 
 \subsection{Segunda instância para benchmark}
 
-Para ampliar a análise experimental, também foi criada uma instância com 20 bairros e 42 arestas, armazenada nos arquivos \texttt{dados/vertices\_maior.txt} e \texttt{dados/arestas\_maior.txt}. Essa instância continua sendo conexa e usa apenas pesos positivos, preservando as premissas do problema.
+Para ampliar a análise experimental, também foi criada uma instância com 20
+bairros e 42 arestas, armazenada nos arquivos \texttt{dados/vertices\_maior.txt}
+e \texttt{dados/arestas\_maior.txt}. Essa instância continua sendo conexa e usa
+apenas pesos positivos, preservando as premissas do problema.
 
 \section{Resultados}
 
@@ -268,13 +341,19 @@ Bairro & Custo de instalação & Custo operacional anual & \texttt{custoGalpao} 
 \caption{Resultados obtidos com os dados de teste.}
 \end{table}
 
-Observa-se que todos os valores de \texttt{custoGalpao} ficaram negativos, pois em todas as instâncias testadas o custo operacional anual superou o custo fixo de instalação. Dentro da interpretação adotada neste trabalho, isso pode ser visto como um saldo líquido negativo entre o investimento inicial e a operação anual.
+Observa-se que todos os valores de \texttt{custoGalpao} ficaram negativos, pois
+em todas as instâncias testadas o custo operacional anual superou o custo fixo
+de instalação. Dentro da interpretação adotada neste trabalho, isso pode ser
+visto como um saldo líquido negativo entre o investimento inicial e a operação
+anual.
 
-Pela regra, o melhor bairro foi o bairro 5, pois apresentou o menor valor de \texttt{custoGalpao}.
+Pela regra, o melhor bairro foi o bairro 5, pois apresentou o menor valor de
+\texttt{custoGalpao}.
 
 \subsection{Comparação de tempos}
 
-Antes dos resultados experimentais, a Tabela~\ref{tab:comparacao-teorica} resume as principais diferenças conceituais entre os algoritmos usados.
+Antes dos resultados experimentais, a Tabela~\ref{tab:comparacao-teorica}
+resume as principais diferenças conceituais entre os algoritmos usados.
 
 \begin{table}[h]
 \centering
@@ -282,17 +361,27 @@ Antes dos resultados experimentais, a Tabela~\ref{tab:comparacao-teorica} resume
 \toprule
 Critério & Dijkstra & Bellman-Ford \\
 \midrule
-Premissa sobre pesos & Exige pesos não negativos para garantir corretude. & Aceita pesos negativos, desde que não haja ciclo negativo alcançável. \\
-Complexidade nesta implementação & $O((V + E)\log V)$ com fila de prioridade e lista de adjacência. & $O(V \cdot E)$ com relaxamento repetido da lista de arestas. \\
-Estrutura principal usada & Lista de adjacência e fila de prioridade. & Lista de arestas percorrida em várias iterações. \\
-Vantagem esperada & Melhor escalabilidade em grafos maiores com pesos não negativos. & Implementação simples e robusta para casos mais gerais. \\
+Premissa sobre pesos
+    & Exige pesos não negativos para garantir corretude.
+    & Aceita pesos negativos, desde que não haja ciclo negativo alcançável. \\
+Complexidade nesta implementação
+    & $O((V + E)\log V)$ com fila de prioridade e lista de adjacência.
+    & $O(V \cdot E)$ com relaxamento repetido da lista de arestas. \\
+Estrutura principal usada
+    & Lista de adjacência e fila de prioridade.
+    & Lista de arestas percorrida em várias iterações. \\
+Vantagem esperada
+    & Melhor escalabilidade em grafos maiores com pesos não negativos.
+    & Implementação simples e robusta para casos mais gerais. \\
 \bottomrule
 \end{tabular}
 \caption{Comparação teórica entre Dijkstra e Bellman-Ford.}
 \label{tab:comparacao-teorica}
 \end{table}
 
-Além da execução normal, foi criado um modo de benchmark no programa para repetir os algoritmos várias vezes por bairro e gravar as médias em CSV. O alvo:
+Além da execução normal, foi criado um modo de benchmark no programa para
+repetir os algoritmos várias vezes por bairro e gravar as médias em CSV. O
+alvo:
 
 \begin{lstlisting}
 make run-time-compare
@@ -319,10 +408,17 @@ resultados/time_compare_large.csv
 Esse arquivo segue o formato:
 
 \begin{lstlisting}
-bairro_id,repeticoes,media_dijkstra_us,media_bellman_ford_us
+bairro_id,repeticoes,media_dijkstra_tempo_real_us,
+media_bellman_ford_tempo_real_us,media_dijkstra_cpu_us,
+media_bellman_ford_cpu_us
 \end{lstlisting}
 
-A medição do benchmark é feita externamente às funções do TAD, acumulando o tempo real de cada chamada em ponto flutuante. Isso evita que, em entradas pequenas, a conversão imediata para microssegundos inteiros zere artificialmente a média.
+A medição do benchmark é feita externamente às funções do TAD, acumulando em
+ponto flutuante tanto o tempo real de cada chamada quanto o tempo de CPU
+consumido pelo processo. O tempo real foi medido com \texttt{std::chrono},
+enquanto o tempo de CPU foi obtido com \texttt{std::clock()}. Isso permite
+comparar duas perspectivas complementares: o tempo total observado na execução
+e o tempo efetivamente gasto pelo processador.
 
 Com $100000$ repetições por bairro, foi obtido o CSV abaixo:
 
@@ -330,41 +426,222 @@ Com $100000$ repetições por bairro, foi obtido o CSV abaixo:
 \centering
 \begin{tabular}{crr}
 \toprule
-Bairro & Média Dijkstra (us) & Média Bellman-Ford (us) \\
+Bairro & Média Dijkstra (tempo real, us) & Média Bellman-Ford (tempo real, us) \\
 \midrule
-1 & 0,2331 & 0,1016 \\
-2 & 0,2103 & 0,0990 \\
-3 & 0,1947 & 0,0880 \\
-4 & 0,2017 & 0,1007 \\
-5 & 0,1967 & 0,1007 \\
+1 & 0,2341 & 0,1210 \\
+2 & 0,2215 & 0,1160 \\
+3 & 0,2010 & 0,1050 \\
+4 & 0,2167 & 0,1291 \\
+5 & 0,2108 & 0,1277 \\
 \bottomrule
 \end{tabular}
-\caption{Médias medidas no benchmark para os dados de teste.}
+\caption{Médias de tempo real medidas no benchmark para os dados de teste.}
+\label{tab:benchmark-pequeno}
 \end{table}
 
-Na instância mínima, Bellman-Ford foi mais rápido em todos os bairros testados. A média geral ficou em $0{,}0980$ us contra $0{,}2073$ us do Dijkstra, isto é, Dijkstra levou em média 2,12 vezes o tempo do Bellman-Ford. Como a razão variou apenas de 1,95 a 2,29 entre os bairros, o comportamento foi consistente dentro dessa entrada.
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.88\textwidth,
+    height=6.5cm,
+    xlabel={Bairro},
+    ylabel={Tempo médio (us)},
+    xmin=1, xmax=5,
+    xtick={1,2,3,4,5},
+    ymin=0,
+    grid=major,
+    legend style={at={(0.5,1.02)}, anchor=south, legend columns=2},
+    nodes near coords,
+    point meta=y,
+    every node near coord/.append style={font=\scriptsize, yshift=6pt},
+]
+\addplot[
+    color=blue,
+    mark=*,
+    thick
+] coordinates {
+    (1,0.2341)
+    (2,0.2215)
+    (3,0.2010)
+    (4,0.2167)
+    (5,0.2108)
+};
+\addlegendentry{Dijkstra}
 
-Para reduzir o risco de tirar conclusão a partir de um único caso muito pequeno, a segunda instância com 20 bairros também foi submetida ao benchmark com $20000$ repetições por bairro. Em vez de listar as 20 linhas do CSV, a Tabela~\ref{tab:resumo-benchmark} resume as médias gerais das duas instâncias.
+\addplot[
+    color=red,
+    mark=square*,
+    thick
+] coordinates {
+    (1,0.1210)
+    (2,0.1160)
+    (3,0.1050)
+    (4,0.1291)
+    (5,0.1277)
+};
+\addlegendentry{Bellman-Ford}
+\end{axis}
+\end{tikzpicture}
+\caption{Comparação visual das médias de tempo real na instância com 5 bairros.}
+\label{fig:benchmark-pequeno}
+\end{figure}
+
+Na instância mínima, Bellman-Ford foi mais rápido em todos os bairros testados
+tanto em tempo real quanto em tempo de CPU. No tempo real, a média geral ficou
+em $0{,}1198$ us contra $0{,}2168$ us do Dijkstra, isto é, Dijkstra levou em
+média 1,81 vez o tempo do Bellman-Ford. Já no tempo de CPU, as médias foram
+$0{,}3971$ us e $0{,}4931$ us, respectivamente, o que reduz a razão média para
+1,24. A Figura~\ref{fig:benchmark-pequeno} mostra que, pelo critério de tempo
+real, essa diferença se manteve estável para todos os vértices avaliados.
+
+Para reduzir o risco de tirar conclusão a partir de um único caso muito
+pequeno, a segunda instância com 20 bairros também foi submetida ao benchmark
+com $20000$ repetições por bairro. Em vez de listar as 20 linhas do CSV, a
+Tabela~\ref{tab:resumo-benchmark} resume as médias gerais das duas instâncias.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lrrr}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lrrrrrr}
 \toprule
-Instância & Média Dijkstra (us) & Média Bellman-Ford (us) & Razão Dijkstra/Bellman \\
+Instância
+    & Dijkstra tempo real
+    & Bellman tempo real
+    & Razão tempo real
+    & Dijkstra CPU
+    & Bellman CPU
+    & Razão CPU \\
 \midrule
-5 bairros, 7 arestas & 0,2073 & 0,0980 & 2,12 \\
-20 bairros, 42 arestas & 0,4902 & 0,3125 & 1,59 \\
+5 bairros, 7 arestas
+    & 0,2168 & 0,1198 & 1,81 & 0,4931 & 0,3971 & 1,24 \\
+20 bairros, 42 arestas
+    & 0,4850 & 0,3227 & 1,50 & 0,7422 & 0,5823 & 1,27 \\
 \bottomrule
 \end{tabular}
-\caption{Resumo das médias gerais dos benchmarks executados.}
+}
+\caption{Resumo das médias gerais dos benchmarks executados em tempo real e
+tempo de CPU.}
 \label{tab:resumo-benchmark}
 \end{table}
 
-Na instância maior, Bellman-Ford continuou mais rápido em todos os vértices medidos. A média geral passou para $0{,}3125$ us, enquanto Dijkstra ficou em $0{,}4902$ us. A razão média caiu para 1,59, com variação entre 1,29 e 1,93. Isso é relevante porque mostra que, embora Bellman-Ford ainda tenha vencido, a vantagem relativa diminuiu quando o grafo cresceu.
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.92\textwidth,
+    height=7cm,
+    xlabel={Bairro},
+    ylabel={Tempo médio (us)},
+    xmin=1, xmax=20,
+    xtick={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20},
+    x tick label style={font=\small, rotate=45, anchor=east},
+    ymin=0,
+    grid=major,
+    legend style={at={(0.5,1.02)}, anchor=south, legend columns=2},
+    nodes near coords,
+    point meta=y,
+    every node near coord/.append style={font=\scriptsize, yshift=6pt},
+]
+\addplot[
+    color=blue,
+    mark=*,
+    thick
+] coordinates {
+    (1,0.4731) (2,0.4744) (3,0.4840) (4,0.5019) (5,0.4559)
+    (6,0.5290) (7,0.4385) (8,0.5253) (9,0.4716) (10,0.5440)
+    (11,0.4530) (12,0.4993) (13,0.4846) (14,0.5319) (15,0.4588)
+    (16,0.4970) (17,0.4437) (18,0.4910) (19,0.4521) (20,0.4901)
+};
+\addlegendentry{Dijkstra}
 
-Os resultados experimentais, portanto, não repetiram a expectativa puramente assintótica. A explicação mais plausível é que as entradas avaliadas ainda são pequenas para destacar a vantagem estrutural do Dijkstra, enquanto Bellman-Ford se beneficia aqui de uma implementação simples, com percursos lineares sobre um vetor de arestas e pouca sobrecarga de estruturas auxiliares. Já o Dijkstra, apesar da melhor ordem assintótica, paga o custo constante da fila de prioridade mesmo em grafos modestos.
+\addplot[
+    color=red,
+    mark=square*,
+    thick
+] coordinates {
+    (1,0.3982) (2,0.3077) (3,0.3217) (4,0.3822) (5,0.3604)
+    (6,0.3572) (7,0.2836) (8,0.3905) (9,0.3291) (10,0.3076)
+    (11,0.2460) (12,0.2999) (13,0.3107) (14,0.2943) (15,0.2919)
+    (16,0.2911) (17,0.2912) (18,0.3547) (19,0.3497) (20,0.2866)
+};
+\addlegendentry{Bellman-Ford}
+\end{axis}
+\end{tikzpicture}
+\caption{Comparação visual das médias de tempo real na instância com 20 bairros.}
+\label{fig:benchmark-grande}
+\end{figure}
 
-Assim, a comparação entre os algoritmos pode ser resumida em três pontos. Primeiro, ambos produziram os mesmos caminhos mínimos em todas as execuções, confirmando a corretude esperada. Segundo, Bellman-Ford foi mais rápido nas duas instâncias avaliadas. Terceiro, o aumento do tamanho do grafo reduziu a vantagem relativa de Bellman-Ford, o que é compatível com a hipótese de que, em entradas substancialmente maiores, a tendência teórica do Dijkstra pode começar a aparecer de forma mais clara.
+Na instância maior, Bellman-Ford continuou mais rápido em todos os vértices
+medidos também nas duas métricas. No tempo real, a média geral passou para
+$0{,}3227$ us, enquanto Dijkstra ficou em $0{,}4850$ us. A razão média caiu
+para 1,50, com variação entre 1,19 e 1,84. No tempo de CPU, as médias foram
+$0{,}5823$ us para Bellman-Ford e $0{,}7422$ us para Dijkstra, mantendo a
+razão média em 1,27, com variação entre 1,10 e 1,43. A
+Figura~\ref{fig:benchmark-grande} evidencia essa redução relativa ao mostrar
+curvas ainda separadas, porém mais próximas do que na instância menor.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    ybar,
+    bar width=10pt,
+    width=\textwidth,
+    height=7cm,
+    ylabel={Tempo médio (us)},
+    symbolic x coords={Dij tempo real,BF tempo real,Dij CPU,BF CPU},
+    xtick=data,
+    ymin=0,
+    grid=major,
+    legend style={at={(0.5,1.02)}, anchor=south, legend columns=2},
+    nodes near coords,
+    every node near coord/.append style={
+        font=\scriptsize,
+        rotate=90,
+        anchor=west
+    },
+]
+\addplot coordinates {
+    (Dij tempo real,0.2168)
+    (BF tempo real,0.1198)
+    (Dij CPU,0.4931)
+    (BF CPU,0.3971)
+};
+\addlegendentry{5 bairros}
+\addplot coordinates {
+    (Dij tempo real,0.4850)
+    (BF tempo real,0.3227)
+    (Dij CPU,0.7422)
+    (BF CPU,0.5823)
+};
+\addlegendentry{20 bairros}
+\end{axis}
+\end{tikzpicture}
+\caption{Comparação das médias gerais em tempo real e tempo de CPU nas duas
+instâncias.}
+\label{fig:comparacao-tempo-real-cpu}
+\end{figure}
+
+Os resultados experimentais, portanto, não repetiram a expectativa puramente
+assintótica. A explicação mais plausível é que as entradas avaliadas ainda são
+pequenas para destacar a vantagem estrutural do Dijkstra, enquanto
+Bellman-Ford se beneficia aqui de uma implementação simples, com percursos
+lineares sobre um vetor de arestas e pouca sobrecarga de estruturas
+auxiliares. Já o Dijkstra, apesar da melhor ordem assintótica, paga o custo
+constante da fila de prioridade mesmo em grafos modestos. A comparação entre
+tempo real e tempo de CPU sugere ainda que parte da diferença observada na
+execução completa é ampliada por custos externos à lógica algorítmica estrita,
+como chamadas de relógio, agendamento do processo e outros efeitos do ambiente
+de execução.
+
+Assim, a comparação entre os algoritmos pode ser resumida em quatro pontos.
+Primeiro, ambos produziram os mesmos caminhos mínimos em todas as execuções,
+confirmando a corretude esperada. Segundo, Bellman-Ford foi mais rápido nas
+duas instâncias avaliadas. Terceiro, o aumento do tamanho do grafo reduziu a
+vantagem relativa de Bellman-Ford no tempo real. Quarto, ao observar o tempo
+de CPU, a diferença entre os dois algoritmos ficou menor e mais estável, como
+mostra a Figura~\ref{fig:comparacao-tempo-real-cpu}.
 
 \section{Compilação e Execução}
 
@@ -394,16 +671,36 @@ make run-time-compare-large
 
 \section{Conclusão}
 
-O trabalho implementa um TAD de grafo em C++ capaz de modelar os bairros da cidade, calcular caminhos mínimos com Dijkstra e Bellman-Ford e estimar o custo operacional anual de um galpão logístico. A solução também compara os algoritmos por meio de benchmarks repetidos em duas instâncias, com saída em CSV, o que fortalece a análise experimental do relatório.
+O trabalho implementa um TAD de grafo em C++ capaz de modelar os bairros da
+cidade, calcular caminhos mínimos com Dijkstra e Bellman-Ford e estimar o
+custo operacional anual de um galpão logístico. A solução também compara os
+algoritmos por meio de benchmarks repetidos em duas instâncias, com saída em
+CSV, considerando tanto o tempo real quanto o tempo de CPU, o que fortalece a
+análise experimental do relatório.
 
-Sob a perspectiva de orientação a objetos, a solução também procurou manter encapsulamento, coesão e delegação de responsabilidades. A classe \texttt{Grafo} concentra os dados e os comportamentos centrais do problema, enquanto o programa principal atua apenas como interface de execução. Essa separação contribui para uma modelagem mais consistente e facilita a evolução incremental do código.
+Sob a perspectiva experimental, os resultados mostraram que Bellman-Ford foi
+mais rápido nas instâncias avaliadas mesmo quando a medição passou a considerar
+o tempo de CPU. Ao mesmo tempo, a diferença entre os algoritmos ficou menor
+nessa métrica, indicando que o tempo real sofre influência mais forte de custos
+externos ao processamento central do algoritmo. Assim, a comparação ficou mais
+completa ao observar não apenas o tempo total de execução, mas também o custo
+de CPU associado a cada abordagem.
+
+Sob a perspectiva de orientação a objetos, a solução também procurou manter
+encapsulamento, coesão e delegação de responsabilidades. A classe
+\texttt{Grafo} concentra os dados e os comportamentos centrais do problema,
+enquanto o programa principal atua apenas como interface de execução. Essa
+separação contribui para uma modelagem mais consistente e facilita a evolução
+incremental do código.
 
 Como extensões futuras, seria possível:
 
 \begin{itemize}[noitemsep]
-    \item adicionar uma estrutura de mapeamento direto de identificadores para índices;
+    \item adicionar uma estrutura de mapeamento direto de identificadores para
+          índices;
     \item validar automaticamente se o grafo de entrada é conexo;
-    \item incluir mais instâncias de teste para observar melhor o comportamento assintótico dos algoritmos.
+    \item incluir mais instâncias de teste para observar melhor o comportamento
+          assintótico dos algoritmos.
 \end{itemize}
 
 \begin{thebibliography}{9}

@@ -37,7 +37,8 @@ void executarBenchmark(const Grafo& grafo, const std::string& caminhoCsv, int re
         throw std::runtime_error("Nao foi possivel criar o arquivo CSV: " + caminhoCsv);
     }
 
-    arquivoSaida << "bairro_id,repeticoes,media_dijkstra_us,media_bellman_ford_us\n";
+    arquivoSaida << "bairro_id,repeticoes,media_dijkstra_tempo_real_us,media_bellman_ford_tempo_real_us,"
+                    "media_dijkstra_cpu_us,media_bellman_ford_cpu_us\n";
     arquivoSaida << std::fixed << std::setprecision(4);
 
     const auto resultados = grafo.executarBenchmark(repeticoes);
@@ -45,8 +46,10 @@ void executarBenchmark(const Grafo& grafo, const std::string& caminhoCsv, int re
         arquivoSaida
             << resultado.idBairro << ","
             << resultado.repeticoes << ","
-            << resultado.mediaDijkstraMicros << ","
-            << resultado.mediaBellmanFordMicros << "\n";
+            << resultado.mediaDijkstraTempoRealMicros << ","
+            << resultado.mediaBellmanFordTempoRealMicros << ","
+            << resultado.mediaDijkstraCpuMicros << ","
+            << resultado.mediaBellmanFordCpuMicros << "\n";
     }
 
     std::cout << "Arquivo CSV gerado em: " << caminhoCsv << "\n";
