@@ -149,13 +149,13 @@ Para cada bairro candidato a depósito:
     \item soma-se o custo dos 12 meses para obter o custo operacional anual.
 \end{enumerate}
 
-Ao final, a decisão segue literalmente a expressão fornecida no enunciado:
+Ao final, a decisão é representada pela expressão:
 
 \begin{lstlisting}
 custoGalpao = custoInstalacao - custoOperacaoAnual
 \end{lstlisting}
 
-Mesmo sendo uma formulação econômica incomum, ela foi preservada sem alteração para manter aderência ao trabalho solicitado. Uma interpretação possível para essa expressão é tratá-la não como um custo total no sentido estrito, mas como um saldo entre o investimento fixo inicial e o impacto anual da operação. Nessa leitura, valores negativos indicam que o custo operacional anual superou o custo fixo de instalação, o que ajuda a explicar os resultados obtidos nos testes. Ainda assim, neste trabalho a fórmula foi aplicada literalmente, sem reinterpretar o critério de decisão além do que foi fornecido no enunciado.
+Essa expressão pode ser interpretada não como um custo total no sentido estrito, mas como um saldo entre o investimento fixo inicial e o impacto anual da operação. Nessa leitura, valores negativos indicam que o custo operacional anual superou o custo fixo de instalação, o que ajuda a explicar os resultados obtidos. Assim, o critério adotado compara diretamente essas duas parcelas para definir o bairro escolhido.
 
 \section{Análise de Complexidade}
 
