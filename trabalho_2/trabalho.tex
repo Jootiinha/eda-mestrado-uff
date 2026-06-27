@@ -126,9 +126,9 @@ Cada método retorna:
     \item o tempo de execução medido em microssegundos.
 \end{itemize}
 
-No programa principal, os vetores retornados pelos dois algoritmos são comparados. Caso os resultados sejam diferentes, a execução é encerrada, pois isso indicaria erro de implementação.
+Os vetores retornados pelos dois algoritmos são comparados. Caso os resultados sejam diferentes, a execução é encerrada, pois isso indicaria erro de implementação.
 
-Para tornar a modelagem mais orientada a objetos, a análise de negócio também foi incorporada ao TAD por meio dos métodos:
+Para tornar a modelagem mais alinha aos princípios da orientação a objetos, a análise de negócio também foi incorporada ao TAD por meio dos métodos:
 
 \begin{itemize}[noitemsep]
     \item \texttt{avaliarBairroCandidato(int indiceDeposito)};
@@ -149,6 +149,7 @@ Para cada bairro candidato a depósito:
     \item soma-se o custo dos 12 meses para obter o custo operacional anual.
 \end{enumerate}
 
+
 Ao final, a decisão é representada pela expressão:
 
 \begin{lstlisting}
@@ -156,6 +157,7 @@ custoGalpao = custoInstalacao - custoOperacaoAnual
 \end{lstlisting}
 
 Essa expressão pode ser interpretada não como um custo total no sentido estrito, mas como um saldo entre o investimento fixo inicial e o impacto anual da operação. Nessa leitura, valores negativos indicam que o custo operacional anual superou o custo fixo de instalação, o que ajuda a explicar os resultados obtidos. Assim, o critério adotado compara diretamente essas duas parcelas para definir o bairro escolhido.
+
 
 \section{Análise de Complexidade}
 
@@ -214,7 +216,7 @@ Esse custo ocorre porque a implementação simples faz a busca do índice de cad
 
 \section{Dados de Teste}
 
-Foram usadas duas instâncias de teste. A primeira possui 5 bairros, como exigido pelo enunciado. A segunda foi adicionada apenas para fortalecer a comparação experimental entre os algoritmos.
+Foram usadas duas instâncias de teste. A primeira possui 5 bairros, a segunda foi adicionada apenas para fortalecer a comparação experimental entre os algoritmos.
 
 \subsection{Arquivo de vértices}
 
@@ -268,7 +270,7 @@ Bairro & Custo de instalação & Custo operacional anual & \texttt{custoGalpao} 
 
 Observa-se que todos os valores de \texttt{custoGalpao} ficaram negativos, pois em todas as instâncias testadas o custo operacional anual superou o custo fixo de instalação. Dentro da interpretação adotada neste trabalho, isso pode ser visto como um saldo líquido negativo entre o investimento inicial e a operação anual.
 
-Pela regra do enunciado, o melhor bairro foi o bairro 5, pois apresentou o menor valor de \texttt{custoGalpao}.
+Pela regra, o melhor bairro foi o bairro 5, pois apresentou o menor valor de \texttt{custoGalpao}.
 
 \subsection{Comparação de tempos}
 
